@@ -9,6 +9,11 @@ public class DuplicateGroup : INotifyPropertyChanged
     public string Hash { get; set; } = string.Empty;
     public long FileSize { get; set; }
 
+    public DuplicateGroup()
+    {
+        _files.CollectionChanged += OnFilesChanged;
+    }
+
     private int _groupNumber;
     public int GroupNumber
     {

@@ -3,7 +3,9 @@ using System.Threading;
 using DuplicateFinder.Core.Services;
 using DuplicateFinder.Core.Utils;
 
-Console.WriteLine("ScanTest: starting");
+var target = args.Length > 0 ? args[0] : Environment.CurrentDirectory;
+Console.WriteLine($"ScanTest: starting (target: {target})");
+
 var hashService = new HashService();
 var protector = new SystemProtector();
 var scanner = new FileScanner(hashService, protector);
@@ -14,8 +16,6 @@ scanner.FileHashed += item => Console.WriteLine($"Hashed: {item.Path}");
 scanner.ProgressUpdated += (c, t) => Console.WriteLine($"Progress: {c}/{t}");
 
 var cts = new CancellationTokenSource();
-
-var target = args.Length > 0 ? args[0] : @"C:\Users\Shoropio\Desktop\remplace";
 
 try
 {

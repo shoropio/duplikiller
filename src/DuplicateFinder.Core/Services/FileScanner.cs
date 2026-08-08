@@ -39,6 +39,19 @@ public class FileScanner : IFileScanner
     {
         var startedAt = DateTime.UtcNow;
         Logger.Info($"Scan started. Paths: {string.Join(", ", targetPaths)}");
+
+        var invalidTargetPaths = targetPaths
+            .Where(path => !string.IsNullOrWhiteSpace(path) && !Directory.Exists(path))
+            .ToList();
+        foreach (var invalidPath in invalidTargetPaths)
+        {
+            Logger.Warning($"Target path does not exist or is inaccessible, skipped: {invalidPath}");
+        }
+
+        var validTargetPaths = targetPaths
+            .Where(path => !string.IsNullOrWhiteSpace(path) && Directory.Exists(path))
+            .ToList();
+
         StatusChanged?.Invoke("Indexando archivos...");
         PhaseChanged?.Invoke(ScanPhase.Discovering, "Indexando archivos...");
 
@@ -56,8 +69,7 @@ public class FileScanner : IFileScanner
         var fileEntries = new ConcurrentBag<(string Path, long Length, DateTime LastWrite)>();
         int discoveryCount = 0;
 
-        var discoveryTasks = targetPaths
-            .Where(path => Directory.Exists(path))
+        var discoveryTasks = validTargetPaths
             .Select(path => Task.Run(() =>
             {
                 try
@@ -135,8 +147,13 @@ public class FileScanner : IFileScanner
         int processedCount = 0;
         int hashesCalculated = 0;
 
-        StatusChanged?.Invoke($"Calculando hash rápido ({totalCandidates} archivos)...");
-        PhaseChanged?.Invoke(ScanPhase.QuickHashing, "Calculando hash rápido...");
+        // Deep mode hashes the full file content directly, skipping the sampled quick hash.
+        bool isDeep = scanMode == ScanMode.Deep;
+        StatusChanged?.Invoke(isDeep
+            ? $"Calculando hash completo ({totalCandidates} archivos)..."
+            : $"Calculando hash rápido ({totalCandidates} archivos)...");
+        PhaseChanged?.Invoke(isDeep ? ScanPhase.FullHashing : ScanPhase.QuickHashing,
+            isDeep ? "Calculando hash completo..." : "Calculando hash rápido...");
 
         var fileItems = new ConcurrentDictionary<string, FileItem>();
 
@@ -155,7 +172,9 @@ public class FileScanner : IFileScanner
                 try
                 {
                     var info = new FileInfo(path);
-                    var quickHash = _hashService.ComputeQuickHash(path);
+                    var primaryHash = isDeep
+                        ? _hashService.ComputeFullHash(path, algorithm)
+                        : _hashService.ComputeQuickHash(path);
                     Interlocked.Increment(ref hashesCalculated);
 
                     var fileItem = new FileItem
@@ -166,8 +185,14 @@ public class FileScanner : IFileScanner
                         CreationTime = info.CreationTime,
                         LastWriteTime = info.LastWriteTime,
                         Extension = info.Extension,
-                        QuickHash = quickHash,
-                        IsSystem = _systemProtector.IsSystemDirectory(info.FullName)
+                        QuickHash = primaryHash,
+                        FullHash = isDeep ? primaryHash : null,
+                        IsSystem = _systemProtector.IsSystemDirectory(info.FullName),
+                        IsHidden = info.Attributes.HasFlag(FileAttributes.Hidden),
+                        IsLocked = IsFileLocked(info.FullName),
+                        Permissions = info.Attributes.HasFlag(FileAttributes.ReadOnly)
+                            ? "Solo lectura"
+                            : "Lectura/Escritura"
                     };
 
                     fileItems.TryAdd(path, fileItem);
@@ -179,53 +204,57 @@ public class FileScanner : IFileScanner
                         FileHashed?.Invoke(fileItem);
                     }
                 }
-                catch (Exception ex) { Logger.Debug($"QuickHash failed for {path}: {ex.Message}"); }
+                catch (Exception ex) { Logger.Debug($"Primary hash failed for {path}: {ex.Message}"); }
             });
         }, cancellationToken);
 
         ProgressUpdated?.Invoke(totalCandidates, totalCandidates);
 
-        StatusChanged?.Invoke("Verificando colisiones con hash completo...");
-
-        var quickHashGroups = fileItems.Values
-            .GroupBy(fi => fi.QuickHash)
-            .Where(g => g.Count() > 1)
-            .ToList();
-
-        var collisionFiles = quickHashGroups.SelectMany(g => g).ToList();
-        processedCount = 0;
-        totalCandidates = collisionFiles.Count;
-
-        if (totalCandidates > 0)
+        if (!isDeep)
         {
-            StatusChanged?.Invoke($"Hash completo ({totalCandidates} archivos)...");
-            PhaseChanged?.Invoke(ScanPhase.FullHashing, "Calculando hash completo...");
+            StatusChanged?.Invoke("Verificando colisiones con hash completo...");
 
-            await Task.Run(() =>
+            var quickHashGroups = fileItems.Values
+                .Where(fi => fi.QuickHash != null)
+                .GroupBy(fi => fi.QuickHash)
+                .Where(g => g.Count() > 1)
+                .ToList();
+
+            var collisionFiles = quickHashGroups.SelectMany(g => g).ToList();
+            processedCount = 0;
+            int collisionTotal = collisionFiles.Count;
+
+            if (collisionTotal > 0)
             {
-                Parallel.ForEach(collisionFiles, parallelOptions, item =>
+                StatusChanged?.Invoke($"Hash completo ({collisionTotal} archivos)...");
+                PhaseChanged?.Invoke(ScanPhase.FullHashing, "Calculando hash completo...");
+
+                await Task.Run(() =>
                 {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    try
+                    Parallel.ForEach(collisionFiles, parallelOptions, item =>
                     {
-                        var fullHash = _hashService.ComputeFullHash(item.Path, algorithm);
-                        Interlocked.Increment(ref hashesCalculated);
-                        item.FullHash = fullHash;
-
-                        int current = Interlocked.Increment(ref processedCount);
-                        if (current % 100 == 0 || current == totalCandidates)
+                        cancellationToken.ThrowIfCancellationRequested();
+                        try
                         {
-                            ProgressUpdated?.Invoke(current, totalCandidates);
-                        }
-                    }
-                    catch (Exception ex) { Logger.Debug($"FullHash failed for {item.Path}: {ex.Message}"); }
-                });
-            }, cancellationToken);
+                            var fullHash = _hashService.ComputeFullHash(item.Path, algorithm);
+                            Interlocked.Increment(ref hashesCalculated);
+                            item.FullHash = fullHash;
 
-            ProgressUpdated?.Invoke(totalCandidates, totalCandidates);
+                            int current = Interlocked.Increment(ref processedCount);
+                            if (current % 100 == 0 || current == collisionTotal)
+                            {
+                                ProgressUpdated?.Invoke(current, collisionTotal);
+                            }
+                        }
+                        catch (Exception ex) { Logger.Debug($"FullHash failed for {item.Path}: {ex.Message}"); }
+                    });
+                }, cancellationToken);
+
+                ProgressUpdated?.Invoke(collisionTotal, collisionTotal);
+            }
         }
 
-        Logger.Info($"Full hash complete. {quickHashGroups.Count} collision groups to verify.");
+        Logger.Info($"Hashing complete. {fileItems.Count} files hashed. Comparing binaries...");
         StatusChanged?.Invoke("Comparación binaria final...");
         PhaseChanged?.Invoke(ScanPhase.Comparing, "Comparando archivos...");
 
@@ -288,5 +317,22 @@ public class FileScanner : IFileScanner
         PhaseChanged?.Invoke(ScanPhase.Completed, "Escaneo completado.");
         Logger.Info($"Scan complete. {finalGroups.Count} groups, {finalDupCount} dupes, {totalSpace} bytes.");
         return finalGroups;
+    }
+
+    private static bool IsFileLocked(string path)
+    {
+        try
+        {
+            using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            return false;
+        }
+        catch (IOException)
+        {
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 }

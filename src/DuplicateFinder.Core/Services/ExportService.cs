@@ -15,10 +15,7 @@ public class ExportService : IExportService
         {
             foreach (var file in group.Files)
             {
-                var escapedPath = file.Path.Contains(',') || file.Path.Contains('"')
-                    ? "\"" + file.Path.Replace("\"", "\"\"") + "\""
-                    : file.Path;
-                sb.AppendLine($"{group.Hash},{file.Name},{escapedPath},{file.Size},{file.LastWriteTime:yyyy-MM-dd HH:mm:ss}");
+                sb.AppendLine($"{CsvEscape(group.Hash)},{CsvEscape(file.Name)},{CsvEscape(file.Path)},{file.Size},{file.LastWriteTime:yyyy-MM-dd HH:mm:ss}");
             }
         }
 
@@ -112,6 +109,9 @@ public class ExportService : IExportService
         File.WriteAllText(path, sb.ToString(), Encoding.UTF8);
         Logger.Info($"TXT exported: {path} ({groups.Sum(g => g.Files.Count)} files)");
     }
+
+    private static string CsvEscape(string value) =>
+        "\"" + value.Replace("\"", "\"\"") + "\"";
 
     private static string EscapeJson(string s) =>
         s.Replace("\\", "\\\\").Replace("\"", "\\\"");
