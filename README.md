@@ -2,7 +2,13 @@
 
 ![CI](https://github.com/shoropio/duplikiller/actions/workflows/ci.yml/badge.svg)
 ![License](https://img.shields.io/github/license/shoropio/duplikiller)
-![.NET 10](https://img.shields.io/badge/.NET-10.0-512BD4)
+![Release](https://img.shields.io/github/v/release/shoropio/duplikiller?label=release)
+![Windows](https://img.shields.io/badge/Windows-10%2F11-0078D6?logo=windows&logoColor=white)
+![.NET](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet&logoColor=white)
+![C#](https://img.shields.io/badge/C%23-14-512BD4?logo=csharp&logoColor=white)
+![WPF](https://img.shields.io/badge/WPF-UI-512BD4?logo=windows&logoColor=white)
+![MVVM](https://img.shields.io/badge/MVVM-Arquitectura-6750A4)
+![xUnit](https://img.shields.io/badge/xUnit-2.9.3-512BD4)
 
 Buscador de archivos duplicados para Windows 10/11. Escanea directorios usando un motor de detección de 4 etapas (tamaño exacto → hash rápido → hash completo → comparación binaria) con protección integrada del sistema.
 
@@ -61,6 +67,11 @@ tests/
 tools/
 └── scan-test/                    # Utilidad CLI de prueba del escáner
 ```
+
+## Créditos
+
+- **Autor:** Davis Vernor Torres Vargas — [@shoropio](https://github.com/shoropio)
+- Desarrollado con **.NET 10**, **WPF** y patrón **MVVM**, con tests en **xUnit**.
 
 ## Licencia
 
