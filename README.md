@@ -42,6 +42,20 @@ dotnet run --project src/DuplicateFinder.App
 dotnet test tests/DuplicateFinder.Core.Tests
 ```
 
+## Publicar release
+
+Genera el ejecutable autónomo, el ZIP y el instalador Inno Setup en `publish/`:
+
+```bash
+powershell -ExecutionPolicy Bypass -File tools/publish.ps1
+```
+
+Requiere .NET 10 SDK e Inno Setup 6 (por defecto en `C:\Program Files (x86)\Inno Setup 6`). Para versionar distinta a la del `.csproj`:
+
+```bash
+powershell -ExecutionPolicy Bypass -File tools/publish.ps1 -Version 1.1.0
+```
+
 ## Herramienta CLI (scan-test)
 
 Utilidad de consola para probar el motor de escaneo desde la línea de comandos:
