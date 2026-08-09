@@ -70,7 +70,6 @@ tools/
 
 ## Créditos
 
-- **Autor:** Davis Vernor Torres Vargas — [@shoropio](https://github.com/shoropio)
 - Desarrollado con **.NET 10**, **WPF** y patrón **MVVM**, con tests en **xUnit**.
 - © 2026 Shoropio Corporation. Todos los derechos reservados.
 

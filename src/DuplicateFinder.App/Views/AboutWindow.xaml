@@ -18,12 +18,26 @@
 
             <Border BorderThickness="0,1,0,0" BorderBrush="{DynamicResource BorderBrush}" Margin="0,20,0,20"/>
 
-            <TextBlock Text="Versión 1.0" FontSize="12"
+            <TextBlock x:Name="VersionText" Text="Versión" FontSize="12"
                        Foreground="{DynamicResource TextPrimaryBrush}"
                        HorizontalAlignment="Center"/>
-            <TextBlock Text="© 2026 Shoropio Corporation. Todos los derechos reservados." FontSize="11"
+            <TextBlock Text="Buscador de archivos duplicados para Windows 10/11"
+                       FontSize="11"
                        Foreground="{DynamicResource TextSecondaryBrush}"
-                       HorizontalAlignment="Center" Margin="0,6,0,20"
+                       HorizontalAlignment="Center" Margin="0,4,0,0"
+                       TextWrapping="Wrap" TextAlignment="Center"/>
+            <TextBlock FontSize="11"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
+                       HorizontalAlignment="Center" Margin="0,6,0,0">
+                <Hyperlink NavigateUri="https://github.com/shoropio/duplikiller"
+                           RequestNavigate="OnHyperlinkRequestNavigate">
+                    github.com/shoropio/duplikiller
+                </Hyperlink>
+            </TextBlock>
+            <TextBlock Text="© 2026 Shoropio Corporation. Todos los derechos reservados."
+                       FontSize="11"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
+                       HorizontalAlignment="Center" Margin="0,12,0,20"
                        TextWrapping="Wrap" TextAlignment="Center" />
 
             <Button Content="Aceptar" Width="100" HorizontalAlignment="Center" Padding="0,6"
