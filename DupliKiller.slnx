@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/DupliKiller.App/DupliKiller.App.csproj" />
+    <Project Path="src/DupliKiller.Core/DupliKiller.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/DupliKiller.Core.Tests/DupliKiller.Core.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/scan-test/ScanTest.csproj" />
+  </Folder>
+</Solution>

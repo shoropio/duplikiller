@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\DuplicateFinder.Core\DuplicateFinder.Core.csproj" />
+    <ProjectReference Include="..\..\src\DupliKiller.Core\DupliKiller.Core.csproj" />
   </ItemGroup>
 
 </Project>

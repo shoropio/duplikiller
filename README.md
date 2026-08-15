@@ -33,13 +33,13 @@ Buscador de archivos duplicados para Windows 10/11. Escanea directorios usando u
 
 ```bash
 dotnet build
-dotnet run --project src/DuplicateFinder.App
+dotnet run --project src/DupliKiller.App
 ```
 
 ## Tests
 
 ```bash
-dotnet test tests/DuplicateFinder.Core.Tests
+dotnet test tests/DupliKiller.Core.Tests
 ```
 
 ## Publicar release
@@ -68,16 +68,16 @@ dotnet run --project tools/scan-test -- "C:\ruta\a\escanear"
 
 ```
 src/
-├── DuplicateFinder.Core/        # Lógica de negocio
+├── DupliKiller.Core/        # Lógica de negocio
 │   ├── Models/                   # FileItem, DuplicateGroup
 │   ├── Services/                 # HashService, FileScanner, FileActionService, ExportService
 │   └── Utils/                    # SystemProtector (seguridad)
-└── DuplicateFinder.App/          # UI WPF con MVVM
+└── DupliKiller.App/          # UI WPF con MVVM
     ├── Views/                    # MainWindow.xaml
     ├── Resources/                # Styles.xaml (tema Fluent oscuro/claro)
     └── app.manifest              # DPI alto, compatibilidad Win10/11
 tests/
-└── DuplicateFinder.Core.Tests/   # Tests xUnit del motor de escaneo
+└── DupliKiller.Core.Tests/   # Tests xUnit del motor de escaneo
 tools/
 └── scan-test/                    # Utilidad CLI de prueba del escáner
 ```

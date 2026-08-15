@@ -1,7 +1,7 @@
 using System;
 using System.Threading;
-using DuplicateFinder.Core.Services;
-using DuplicateFinder.Core.Utils;
+using DupliKiller.Core.Services;
+using DupliKiller.Core.Utils;
 
 var target = args.Length > 0 ? args[0] : Environment.CurrentDirectory;
 Console.WriteLine($"ScanTest: starting (target: {target})");
@@ -19,7 +19,7 @@ var cts = new CancellationTokenSource();
 
 try
 {
-    var groups = scanner.RunScanAsync(
+    var result = scanner.RunScanAsync(
         new System.Collections.Generic.List<string> { target },
         new System.Collections.Generic.List<string>(),
         new System.Collections.Generic.List<string> { ".sys", ".dll" },
@@ -31,12 +31,13 @@ try
         null,
         "SHA256",
         cts.Token,
-        new System.Progress<DuplicateFinder.Core.Services.ScanStatsUpdate>(s =>
+        new System.Progress<DupliKiller.Core.Services.ScanStatsUpdate>(s =>
         {
             Console.WriteLine($"Stats: files={s.FilesScanned}, groups={s.GroupsCount}, dupes={s.DuplicatesCount}");
         })).GetAwaiter().GetResult();
 
-    Console.WriteLine($"Scan finished: {groups.Count} groups");
+    Console.WriteLine($"Scan finished: {result.DuplicateGroups.Count} groups, " +
+        $"{result.ZeroByteFiles.Count} zero-byte, {result.CorruptedFiles.Count} corrupted");
 }
 catch (Exception ex)
 {

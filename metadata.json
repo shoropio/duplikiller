@@ -1,5 +1,5 @@
 {
-  "name": "Windows Duplicate Finder",
+  "name": "DupliKiller",
   "description": "Buscador de archivos duplicados para Windows 10/11 con C# .NET WPF y arquitectura MVVM. Motor de detección de 4 etapas con hashing y comparación binaria.",
   "requestFramePermissions": [],
   "majorCapabilities": []

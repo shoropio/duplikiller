@@ -8,12 +8,12 @@
 
 #define MyAppName "DupliKiller"
 #define MyAppPublisher "Shoropio Corporation"
-#define MyAppExeName "DuplicateFinder.App.exe"
+#define MyAppExeName "DupliKiller.App.exe"
 #define MyAppUrl "https://github.com/shoropio/duplikiller"
 
 #define AppRoot SourcePath + "..\"
 #define MyAppExeDir AppRoot + "publish\win-x64"
-#define MyAppIcon AppRoot + "src\DuplicateFinder.App\Assets\app.ico"
+#define MyAppIcon AppRoot + "src\DupliKiller.App\Assets\app.ico"
 
 [Setup]
 AppId={{6d48fa07-eaad-42b2-be5e-80a9abb93aeb}

@@ -4,11 +4,11 @@ param(
 
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
-$app = Join-Path $root "src\DuplicateFinder.App"
+$app = Join-Path $root "src\DupliKiller.App"
 $out = Join-Path $root "publish\win-x64"
 
 if (-not $Version) {
-    $xml = [xml](Get-Content (Join-Path $app "DuplicateFinder.App.csproj"))
+    $xml = [xml](Get-Content (Join-Path $app "DupliKiller.App.csproj"))
     $Version = $xml.Project.PropertyGroup.Version
 }
 if (-not $Version) { $Version = "1.0.0" }
@@ -22,7 +22,7 @@ dotnet publish $app -c Release -r win-x64 `
     -o $out
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-$exe = Join-Path $out "DuplicateFinder.App.exe"
+$exe = Join-Path $out "DupliKiller.App.exe"
 if (-not (Test-Path $exe)) { throw "No se encontro $exe" }
 
 $zip = Join-Path $root "publish\DupliKiller-$Version-win-x64.zip"
